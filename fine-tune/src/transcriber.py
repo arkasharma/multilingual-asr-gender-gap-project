@@ -1,5 +1,5 @@
 from typing import List, Optional, Union
-
+import os
 import numpy as np
 import torch
 from tqdm import tqdm
@@ -213,14 +213,20 @@ class SimpleTranscriber:
         model_name_or_path: str,
         tgt_lang: str,
         device: str = "cuda",
+        lora_adapter: str = None,
         **init_kwargs,
     ):
         self.tgt_lang = tgt_lang
         self.model_name_or_path = model_name_or_path
         self.device = device
 
-        # # Load Processor
-        self.processor = AutoProcessor.from_pretrained(model_name_or_path)
+        # Load Processor - use base whisper-tiny if this is a LoRA adapter
+        if lora_adapter and os.path.exists(os.path.join(lora_adapter, "adapter_config.json")):
+            self.processor = AutoProcessor.from_pretrained("openai/whisper-tiny")
+        elif os.path.exists(os.path.join(model_name_or_path, "adapter_config.json")):
+            self.processor = AutoProcessor.from_pretrained("openai/whisper-tiny")
+        else:
+            self.processor = AutoProcessor.from_pretrained(model_name_or_path)
 
         # Load Model
         if "whisper" in model_name_or_path or "seamless" in model_name_or_path:
@@ -229,12 +235,35 @@ class SimpleTranscriber:
             model_cls = AutoModelForCTC
 
         print(f"Loading {model_name_or_path} and moving it to {device}...")
-        self.model = (
-            model_cls.from_pretrained(model_name_or_path, **init_kwargs)
-            .to(device)
-            .eval()
-        )
 
+        # Check if this is a LoRA adapter directory
+        adapter_config = os.path.join(model_name_or_path, "adapter_config.json")
+        if lora_adapter and os.path.exists(os.path.join(lora_adapter, "adapter_config.json")):
+            from peft import PeftModel
+            base_model = "openai/whisper-tiny"
+            print(f"Loading base model: {base_model} + LoRA from {lora_adapter}")
+            self.model_name_or_path = base_model
+            self.processor = AutoProcessor.from_pretrained(base_model)
+            base = AutoModelForSpeechSeq2Seq.from_pretrained(base_model, **init_kwargs).to(device)
+            self.model = PeftModel.from_pretrained(base, lora_adapter)
+            self.model = self.model.merge_and_unload().eval()
+        elif os.path.exists(adapter_config):
+            import json as json_lib
+            from peft import PeftModel
+            with open(adapter_config) as f:
+                base_model = json_lib.load(f).get("base_model_name_or_path", "openai/whisper-tiny")
+            print(f"Loading base model: {base_model} + LoRA from {model_name_or_path}")
+            self.model_name_or_path = base_model
+            self.processor = AutoProcessor.from_pretrained(base_model)
+            base = AutoModelForSpeechSeq2Seq.from_pretrained(base_model, **init_kwargs).to(device)
+            self.model = PeftModel.from_pretrained(base, model_name_or_path)
+            self.model = self.model.merge_and_unload().eval()
+        else:
+            self.model = (
+                model_cls.from_pretrained(model_name_or_path, **init_kwargs)
+                .to(device)
+                .eval()
+            )
         print("Transcriber loaded for language:", tgt_lang)
 
     def _build_loader(
@@ -272,7 +301,7 @@ class SimpleTranscriber:
         loader = torch.utils.data.DataLoader(
             SimpleDataset(raw_audio),
             batch_size=batch_size,
-            num_workers=num_workers,
+            num_workers=0,#num_workers=num_workers,
             collate_fn=collate_pad_and_trim,
             pin_memory=True,
         )

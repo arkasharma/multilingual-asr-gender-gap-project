@@ -131,12 +131,13 @@ def main(
     #####
     # Prepare the pipeline and model
     #####
+    lora_adapter = config.get("lora_adapter", None)
     transcriber = SimpleTranscriber(
         model_name_or_path=model,
         tgt_lang=lang,
         torch_dtype=torch.bfloat16,
-        # chunk_length_s=30,
-        device="cuda",
+        device="cpu",
+        lora_adapter=lora_adapter,
     )
     print("Transcriber loaded")
 
@@ -251,7 +252,7 @@ def main(
             rids.extend(r["rid"])
             gc.collect()
     else:
-        r = transcribe_chunk(data, transcriber)
+        r = transcribe_chunk(data, transcriber, load_and_resample=False)
         transcriptions = r["transcription"]
         references = r["reference"]
         clients = r["client_id"]

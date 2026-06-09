@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from datasets import load_dataset
 from tqdm import tqdm
-from utils import MozillaCVDataset
+from .utils import MozillaCVDataset
 
 
 def main(config_file: str, config_id: int, output_dir, num_proc: int = 18):

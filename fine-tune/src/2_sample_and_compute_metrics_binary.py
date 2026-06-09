@@ -191,11 +191,11 @@ def main(
         dfs.append(df)
     transcription_df = pd.concat(dfs)
 
-    if target_col == "gender" and "fleurs" in dataset:
-        print(f"Processing FLEURS: mapping gender IDs with {ID_2_GENDER_MAP}")
-        transcription_df[target_col] = transcription_df[target_col].apply(
-            lambda x: ID_2_GENDER_MAP[x]
-        )
+    # if target_col == "gender" and "fleurs" in dataset:
+    #     print(f"Processing FLEURS: mapping gender IDs with {ID_2_GENDER_MAP}")
+    #     transcription_df[target_col] = transcription_df[target_col].apply(
+    #         lambda x: ID_2_GENDER_MAP[x]
+    #     )
 
     print("Number of transcriptions found:", len(transcription_df))
 
@@ -217,12 +217,21 @@ def main(
         #         print(idx, gender_from_tr, ID_2_GENDER_MAP[gender_from_si])
 
         for idx, row in transcription_df.iterrows():
-            if (row["client_id"].startswith("female") and row["gender"] == "male") or (
-                row["client_id"].startswith("male") and row["gender"] == "female"
-            ):
-                raise RuntimeError(
-                    f"(Precomputed) speaker ID and gender at {idx} do not match"
-                )
+            if isinstance(row["client_id"], str):
+                if (row["client_id"].startswith("female") and row["gender"] == "male") or (
+                    row["client_id"].startswith("male") and row["gender"] == "female"
+                ):
+                    raise RuntimeError(
+                        f"(Precomputed) speaker ID and gender at {idx} do not match"
+                    )
+
+        # for idx, row in transcription_df.iterrows():
+        #     if (row["client_id"].startswith("female") and row["gender"] == "male") or (
+        #         row["client_id"].startswith("male") and row["gender"] == "female"
+        #     ):
+        #         raise RuntimeError(
+        #             f"(Precomputed) speaker ID and gender at {idx} do not match"
+        #         )
 
     if split != "all":
         print(f"Split is {split}. Filtering out the rest.")
