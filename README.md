@@ -64,9 +64,9 @@ Evaluated tiny, medium, and large-v3 on English FLEURS.
 
 | Model | Overall WER | Majority (M) WER | Minority (F) WER | E score |
 |---|---|---|---|---|
-| Whisper-tiny | 0.1320 | 0.1689 | 0.1099 | −34.92 |
-| Whisper-medium | 0.0461 | 0.0477 | 0.0452 | −5.36 |
-| Whisper-large-v3 | 0.0413 | 0.0425 | 0.0405 | −4.58 |
+| Whisper-Tiny | 0.1320 | 0.1689 | 0.1099 | −34.92 |
+| Whisper-Medium | 0.0461 | 0.0477 | 0.0452 | −5.36 |
+| Whisper-Large-v3 | 0.0413 | 0.0425 | 0.0405 | −4.58 |
 
 **Finding:** All Whisper models perform better on female speakers (negative E). The gap shrinks as scale increases, with large-v3 giving the best accuracy *and* fairness.
 
@@ -75,13 +75,13 @@ Evaluated medium and large-v2 on English FLEURS.
 
 | Model | Overall WER | Majority (M) WER | Minority (F) WER | E score |
 |---|---|---|---|---|
-| SeamlessM4T-medium | 0.2609 | 0.2646 | 0.2588 | −2.18 |
-| SeamlessM4T-large-v2 | 0.2556 | 0.2527 | 0.2574 | +1.85 |
+| SeamlessM4T-Medium | 0.2609 | 0.2646 | 0.2588 | −2.18 |
+| SeamlessM4T-Large-v2 | 0.2556 | 0.2527 | 0.2574 | +1.85 |
 
 **Finding:** Scaling up lowers WER/CER and reduces the absolute disparity, but the **bias direction flips** (medium favors female speakers; large-v2 slightly favors male speakers).
 
 ### 3. Fairness-Aware Fine-Tuning
-LoRA fine-tuning of Whisper-tiny under three conditions, evaluated by E score.
+LoRA fine-tuning of Whisper-Tiny under three conditions, evaluated by E score.
 
 **LoRA setup:** rank `r = 4`, layers 2–3, targets `q_proj` / `v_proj`, ~1% of parameters trained, 2,600 samples, 3 epochs.
 
