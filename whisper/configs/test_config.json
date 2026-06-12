@@ -1,0 +1,12 @@
+{
+  "0": {
+    "dataset": "google/fleurs",
+    "model": "openai/whisper-large-v3",
+    "lang": "en",
+    "split": "train",
+    "load_type": "remote",
+    "process_slice": null,
+    "reference_col": "transcription",
+    "speaker_id_col": "id"
+  }
+}

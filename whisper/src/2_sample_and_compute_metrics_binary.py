@@ -236,7 +236,7 @@ def main(
     if not skip_support_filter:
         # 3. Filter out empty recordings (VAD pipeline) We saw some issues with FLEURS es
         support_file = f"{os.path.dirname(output_dir)}/dataset_statistics/support_{dataset_id}_all_{lang}.csv"
-        support_file = f"./results-interim-asr-performance-gap/dataset_statistics/support_{dataset_id}_all_{lang}.csv"
+        support_file = f"results-interim-asr-performance-gap/dataset_statistics/support_{dataset_id}_all_{lang}.csv"
         print(f"Loading support file from {support_file}")
         support_df = pd.read_csv(support_file, index_col="rid")
 

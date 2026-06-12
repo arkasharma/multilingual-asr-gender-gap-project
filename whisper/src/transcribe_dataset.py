@@ -8,6 +8,7 @@ import time
 
 import fire
 import librosa
+import soundfile as sf
 import numpy as np
 import pandas as pd
 import torch
@@ -16,7 +17,7 @@ from datasets import Dataset, load_dataset
 from tqdm import tqdm
 from fleurs import LANG_TO_CONFIG_MAPPING
 from datasets import Audio
-from codecarbon import track_emissions
+# from codecarbon import track_emissions
 
 from transcriber import SimpleTranscriber
 
@@ -26,8 +27,18 @@ logger = logging.getLogger(__name__)
 TARGET_SAMPLING_RATE = 16_000
 MAX_LENGTH_SECONDS = 30
 
+def load_audio_sf(path, target_sr=16000):
+    arr, sr = sf.read(path)
 
-@track_emissions
+    if len(arr.shape) > 1:
+        arr = np.mean(arr, axis=1)
+
+    if sr != target_sr:
+        arr = librosa.resample(arr, orig_sr=sr, target_sr=target_sr)
+
+    return arr
+
+# @track_emissions
 def main(
     config_file: str,
     config_id: int,
@@ -134,9 +145,8 @@ def main(
     transcriber = SimpleTranscriber(
         model_name_or_path=model,
         tgt_lang=lang,
-        torch_dtype=torch.bfloat16,
-        # chunk_length_s=30,
-        device="cuda",
+        torch_dtype=torch.float32,
+        device="mps",
     )
     print("Transcriber loaded")
 
@@ -146,7 +156,7 @@ def main(
         lengths = list()
         for path in examples["audio"]:
             try:
-                arr, _ = librosa.load(path, sr=TARGET_SAMPLING_RATE)
+                arr = load_audio_sf(path, TARGET_SAMPLING_RATE)
                 resampled.append(arr)
                 is_valid.append(True)
                 lengths.append(arr.shape[0])
@@ -202,7 +212,7 @@ def main(
             raw_audio=raw_audio,
             sampling_rate=TARGET_SAMPLING_RATE,
             batch_size=batch_size,
-            num_workers=4,
+            num_workers=0,
             max_length=MAX_LENGTH_SECONDS * TARGET_SAMPLING_RATE,
         )
 
@@ -251,7 +261,7 @@ def main(
             rids.extend(r["rid"])
             gc.collect()
     else:
-        r = transcribe_chunk(data, transcriber)
+        r = transcribe_chunk(data, transcriber, load_and_resample=(load_type == "local" and "mozilla" in dataset))
         transcriptions = r["transcription"]
         references = r["reference"]
         clients = r["client_id"]
@@ -269,6 +279,34 @@ def main(
     results = pd.DataFrame(result).set_index("rid")
     results.to_csv(out_file, encoding="utf-8", sep="\t")
 
+
+# if __name__ == "__main__":
+#     stime = time.time()
+#     print("RUN STARTED")
+#     # fire.Fire(main)
+#     import argparse
+
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument("--config_file")
+#     parser.add_argument("--config_id", type=int)
+#     parser.add_argument("--output_dir")
+#     parser.add_argument("--num_workers", type=int, default=4)
+#     parser.add_argument("--batch_size", type=int, default=1)
+#     parser.add_argument("--enable_chunk_decoding", action="store_true")
+#     parser.add_argument("--chunk_size", type=int, default=3000)
+
+#     args = parser.parse_args()
+
+#     main(
+#         config_file=args.config_file,
+#         config_id=args.config_id,
+#         output_dir=args.output_dir,
+#         num_workers=args.num_workers,
+#         batch_size=args.batch_size,
+#         enable_chunk_decoding=args.enable_chunk_decoding,
+#         chunk_size=args.chunk_size,
+#     )
+#     print(f"RUN COMPLETED ({time.time() - stime:.0f} SECONDS)")
 
 if __name__ == "__main__":
     stime = time.time()

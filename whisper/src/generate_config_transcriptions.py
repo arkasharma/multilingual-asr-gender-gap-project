@@ -1,17 +1,25 @@
 import json
 from itertools import product
-from utils import CV_LANGS, VOXPOPULI_LANGS
+# from utils import CV_LANGS, VOXPOPULI_LANGS
 from mozilla_cv import LANGS_TO_LOAD_REMOTE
+
+CV_LANGS = [
+    "ar", "ca", "cs", "de", "en", "es", "fi", "fr", "hu", "it", "ja", "nl", "pt", "ro", "ru", "sk", "sr", "sw", "yo"
+]
+
+VOXPOPULI_LANGS = [
+    "cs", "de", "en", "es", "fi", "fr", "hu", "it", "nl", "ro", "sk"
+]
 
 SPLITS = ["train", "validation", "test"]
 SPLITS = ["validation", "test"]
-MODELS = ["openai/whisper-large-v3", "facebook/seamless-m4t-v2-large"]
+MODELS = ["openai/whisper-large-v3", "facebook/seamless-m4t-v2-large"] #TODO: edit here, v1, large, medium
 DATASETS = [
     "mozilla-foundation/common_voice_16_0",
     "google/fleurs",
     "facebook/voxpopuli",
 ]
-OUTPUT_FILE = "../configs/co2_emission_transcription_config.json"
+OUTPUT_FILE = "configs/co2_emission_transcription_config.json"
 
 LONG_LANGS = {"en", "ca", "de", "es", "fr", "it"}
 PROCESS_SLICES = ["0-0.25", "0.25-0.5", "0.5-0.75", "0.75-1"]

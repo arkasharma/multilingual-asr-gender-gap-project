@@ -15,25 +15,25 @@ sns.set_theme("paper")
 SPLITS = ["train", "validation", "test"]
 
 LANG_TO_CONFIG_MAPPING = {
-    "de": "de_de",
+    # "de": "de_de",
     "en": "en_us",
-    "nl": "nl_nl",
-    "ru": "ru_ru",
-    "sr": "sr_rs",
-    "it": "it_it",
-    "fr": "fr_fr",
-    "es": "es_419",
-    "ca": "ca_es",
-    "pt": "pt_br",
-    "sw": "sw_ke",
-    "yo": "yo_ng",
-    "ja": "ja_jp",
-    "hu": "hu_hu",
-    "ar": "ar_eg",
-    "fi": "fi_fi",
-    "ro": "ro_ro",
-    "cs": "cs_cz",
-    "sk": "sk_sk",
+    # "nl": "nl_nl",
+    # "ru": "ru_ru",
+    # "sr": "sr_rs",
+    # "it": "it_it",
+    # "fr": "fr_fr",
+    # "es": "es_419",
+    # "ca": "ca_es",
+    # "pt": "pt_br",
+    # "sw": "sw_ke",
+    # "yo": "yo_ng",
+    # "ja": "ja_jp",
+    # "hu": "hu_hu",
+    # "ar": "ar_eg",
+    # "fi": "fi_fi",
+    # "ro": "ro_ro",
+    # "cs": "cs_cz",
+    # "sk": "sk_sk",
 }
 
 id_to_gender = {1: "female", 0: "male"}
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     for lang, lang_code in tqdm(LANG_TO_CONFIG_MAPPING.items(), desc="Lang"):
 
-        outfile = f"./results-interim-asr-performance-gap/dataset_statistics/fleurs/speaker_info_{lang}.csv"
+        outfile = f"results-interim-asr-performance-gap/dataset_statistics/fleurs/speaker_info_{lang}.csv"
         if os.path.exists(outfile):
             print("Output file exists alread. Skipping...")
             continue
@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
         for split in SPLITS:
             curr_data = dataset[split]
-            emb_file = f"./results-interim-asr-performance-gap/embeddings/fleurs_ecapa_voxceleb_{split}_{lang}.pt"
+            emb_file = f"results-interim-asr-performance-gap/embeddings/fleurs_ecapa_voxceleb_{split}_{lang}.pt"
             try:
                 embeds = torch.load(emb_file)
             except Exception as e:
@@ -118,7 +118,7 @@ if __name__ == "__main__":
         fig.suptitle(f"FLEURS, language: {lang}")
         # fig.tight_layout()
         fig.savefig(
-            f"./results-interim-asr-performance-gap/charts/fleurs/umap_hdbscan_{lang}.pdf"
+            f"results-interim-asr-performance-gap/charts/fleurs/umap_hdbscan_{lang}.pdf"
         )
 
         stats = pd.DataFrame(
